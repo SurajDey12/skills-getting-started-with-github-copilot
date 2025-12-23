@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `<div class="participants">
               <h5>Participants:</h5>
               <ul>
-                ${details.participants.map(email => `<li>${email}</li>`).join('')}
+                ${details.participants.map(email => `<li>${email} <button class="delete-btn" data-activity="${name}" data-email="${email}" title="Unregister">🗑️</button></li>`).join('')}
               </ul>
             </div>`
           : `<div class="participants">
@@ -42,6 +42,33 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         activitiesList.appendChild(activityCard);
+
+        // Add event listeners for delete buttons
+        const deleteButtons = activityCard.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(button => {
+          button.addEventListener('click', async (event) => {
+            const activityName = event.target.dataset.activity;
+            const email = event.target.dataset.email;
+            try {
+              const response = await fetch(
+                `/activities/${encodeURIComponent(activityName)}/unregister?email=${encodeURIComponent(email)}`,
+                {
+                  method: "DELETE",
+                }
+              );
+              const result = await response.json();
+              if (response.ok) {
+                // Refresh activities
+                fetchActivities();
+              } else {
+                alert(result.detail || "An error occurred");
+              }
+            } catch (error) {
+              alert("Failed to unregister. Please try again.");
+              console.error("Error unregistering:", error);
+            }
+          });
+        });
 
         // Add option to select dropdown
         const option = document.createElement("option");
